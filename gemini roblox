@@ -1,0 +1,46 @@
+local httpService = game:GetService("HttpService")
+
+local ApiKey = ""
+local endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="..ApiKey
+
+game.Players.PlayerAdded:Connect(function(plr)
+	plr.Chatted:Connect(function(msg)
+
+		--json bs
+		local requestBody = {
+			contents = {
+				parts = {
+					text = msg
+				}
+			}
+		}
+
+		local jsonEncode = httpService:JSONEncode(requestBody)
+
+		--error detection
+		local success, response = pcall(function()
+			return 	httpService:PostAsync(
+				endpoint,
+				jsonEncode,
+				Enum.HttpContentType.ApplicationJson,
+				false
+			)
+		end)
+
+
+		--success
+		if success then
+
+			local data =httpService:JSONDecode(response)
+			local answer = data.candidates and data.candidates[1] and data.candidates[1].content.parts[1].text or "No reply"
+
+		else
+
+			warn(response)
+
+		end
+
+	end)
+end)
+
+--this is code i've written that uses the gemini 2.0 api so u can chat with if get ur own api key and put it in the api key variable
